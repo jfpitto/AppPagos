@@ -12,6 +12,12 @@ import io
 st.set_page_config(page_title="Sistema de Pagos", layout="centered")
 
 # =========================
+# CONTROL DE ENVIO ✅
+# =========================
+if "pago_registrado" not in st.session_state:
+    st.session_state.pago_registrado = False
+
+# =========================
 # GOOGLE SHEETS
 # =========================
 scope = [
@@ -67,11 +73,11 @@ st.write(f"✅ Saldo restante: $ {saldo_actual:,.0f}")
 # =========================
 st.subheader("➕ Registrar nuevo pago")
 
-descripcion = st.text_input("Descripción (ej. Semana 1, Trabajo de muros)")
+descripcion = st.text_input("Descripción")
 monto = st.number_input("Monto a pagar", min_value=0, step=10000)
 
 # =========================
-# FIRMA ✅
+# FIRMA
 # =========================
 st.subheader("✍️ Firma del constructor")
 
@@ -87,7 +93,7 @@ canvas_result = st_canvas(
 # =========================
 # REGISTRAR
 # =========================
-if st.button("Registrar pago"):
+if st.button("Registrar pago", disabled=st.session_state.pago_registrado):
 
     if monto <= 0:
         st.error("El monto debe ser mayor a cero")
@@ -101,7 +107,6 @@ if st.button("Registrar pago"):
     else:
         fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
         nuevo_saldo = saldo_actual - monto
-
         firma_texto = f"Firmado ✅ {fecha}"
 
         # ✅ SQLite
@@ -120,10 +125,12 @@ if st.button("Registrar pago"):
 
         st.success("✅ Pago registrado correctamente")
 
-        # =========================
-        # RECIBO IMAGEN ✅
-        # =========================
+        # ✅ BLOQUEAR NUEVOS CLICKS
+        st.session_state.pago_registrado = True
 
+        # =========================
+        # RECIBO PROFESIONAL
+        # =========================
         img = Image.new("RGB", (750, 550), "white")
         draw = ImageDraw.Draw(img)
 
@@ -141,7 +148,6 @@ if st.button("Registrar pago"):
 
         draw.line((50, 140, 700, 140), fill="black")
 
-        # ✅ NOMBRE FIJO
         draw.text((50, 160), "Recibí de:", fill="black")
         draw.text((150, 160), "Maria Elena Giraldo Gomez", fill="black")
 
@@ -163,7 +169,6 @@ if st.button("Registrar pago"):
 
         draw.line((50, 380, 700, 380), fill="black")
 
-        # FIRMA
         draw.text((50, 400), "Firma del trabajador:", fill="black")
 
         firma_img = Image.fromarray(canvas_result.image_data.astype("uint8"))
@@ -186,6 +191,13 @@ if st.button("Registrar pago"):
 
         st.image(img, caption="Vista previa del recibo")
 
+# =========================
+# BOTÓN NUEVO PAGO ✅
+# =========================
+if st.session_state.pago_registrado:
+    if st.button("🔄 Registrar nuevo pago"):
+        st.session_state.pago_registrado = False
+        st.rerun()
 
 # =========================
 # HISTORIAL
