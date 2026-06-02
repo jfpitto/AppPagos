@@ -123,30 +123,56 @@ if st.button("Registrar pago"):
         # =========================
         # RECIBO IMAGEN ✅
         # =========================
-        img = Image.new("RGB", (600, 400), "white")
+
+        img = Image.new("RGB", (750, 550), "white")
         draw = ImageDraw.Draw(img)
 
-        texto = f"""
-RECIBO DE PAGO - CONSTRUCCION CARRERA 29 # 33 - 47 (Santa rita)
+        draw.text((250, 20), "RECIBO DE PAGO", fill="black")
+        draw.line((50, 60, 700, 60), fill="black", width=2)
 
-Fecha: {fecha}
+        draw.text((50, 80), "Proyecto:", fill="black")
+        draw.text((150, 80), "Construcción Carrera 29 # 33 - 47 – Santa Rita", fill="black")
 
-Descripción:
-{descripcion}
+        draw.text((50, 110), "Fecha:", fill="black")
+        draw.text((150, 110), fecha.split(" ")[0], fill="black")
 
-Monto: $ {monto:,.0f}
+        draw.text((350, 110), "Hora:", fill="black")
+        draw.text((420, 110), fecha.split(" ")[1], fill="black")
 
-Saldo restante:
-$ {nuevo_saldo:,.0f}
+        draw.line((50, 140, 700, 140), fill="black")
 
-{firma_texto}
-"""
-        draw.text((20, 20), texto, fill="black")
+        # ✅ NOMBRE FIJO
+        draw.text((50, 160), "Recibí de:", fill="black")
+        draw.text((150, 160), "Maria Elena Giraldo Gomez", fill="black")
 
-        # insertar firma
+        draw.text((50, 190), "Concepto:", fill="black")
+        draw.text((150, 190), "Pago de mano de obra por actividades de construcción", fill="black")
+
+        draw.line((50, 220, 700, 220), fill="black")
+
+        draw.text((50, 240), "Detalle:", fill="black")
+        draw.text((50, 260), descripcion, fill="black")
+
+        draw.line((50, 300, 700, 300), fill="black")
+
+        draw.text((50, 320), "Monto pagado:", fill="black")
+        draw.text((250, 320), f"$ {monto:,.0f}", fill="black")
+
+        draw.text((50, 350), "Saldo restante:", fill="black")
+        draw.text((250, 350), f"$ {nuevo_saldo:,.0f}", fill="black")
+
+        draw.line((50, 380, 700, 380), fill="black")
+
+        # FIRMA
+        draw.text((50, 400), "Firma del trabajador:", fill="black")
+
         firma_img = Image.fromarray(canvas_result.image_data.astype("uint8"))
         firma_img = firma_img.resize((300, 100))
-        img.paste(firma_img, (150, 250))
+        img.paste(firma_img, (200, 380))
+
+        draw.line((200, 480, 500, 480), fill="black")
+
+        draw.text((50, 500), "Constancia: El pago fue recibido a satisfacción.", fill="black")
 
         buffer = io.BytesIO()
         img.save(buffer, format="PNG")
@@ -159,6 +185,7 @@ $ {nuevo_saldo:,.0f}
         )
 
         st.image(img, caption="Vista previa del recibo")
+
 
 # =========================
 # HISTORIAL
