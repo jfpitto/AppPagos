@@ -16,8 +16,10 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 
+
 creds_dict = json.loads(os.environ["GOOGLE_CREDS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+
 client = gspread.authorize(creds)
 
 sheet = client.open("Control_Pagos").sheet1
