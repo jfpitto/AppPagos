@@ -221,22 +221,7 @@ if st.session_state.recibo_png:
         mime="image/png"
     )
 
-# =========================
-# WHATSAPP
-# =========================
-if st.session_state.mensaje_ws:
 
-    st.subheader("📲 Enviar por WhatsApp")
-
-    for num in WHATSAPP_NUMEROS:
-        url = f"https://wa.me/{num}?text={st.session_state.mensaje_ws}"
-
-        st.markdown(
-            f'<a href="{url}" target="_blank">'
-            f'<button style="background-color:#25D366;color:white;padding:10px;border:none;border-radius:5px;">'
-            f'Enviar a {num}</button></a>',
-            unsafe_allow_html=True
-        )
 
     st.info("1. Abre WhatsApp\n2. Adjunta el recibo PNG\n3. Enviar ✅")
 
