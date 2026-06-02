@@ -78,6 +78,20 @@ st.subheader("📊 Estado Actual")
 st.write(f"💼 Monto pactado: $ {MONTO_TOTAL:,.0f}")
 st.write(f"💸 Total pagado: $ {total_pagado:,.0f}")
 st.write(f"✅ Saldo restante: $ {saldo_actual:,.0f}")
+# =========================
+# FORMATO DE MONTO ✅
+# =========================
+def limpiar_numero(valor):
+    try:
+        return int(valor.replace(",", "").replace(".", ""))
+    except:
+        return 0
+
+def formatear_numero(valor):
+    try:
+        return "{:,.0f}".format(valor)
+    except:
+        return valor
 
 # =========================
 # FORMULARIO
@@ -87,11 +101,13 @@ st.subheader("➕ Registrar nuevo pago")
 descripcion = st.text_input("Descripción")
 monto_input = st.text_input("Monto a pagar")
 
-if monto_input:
-    monto_limpio = limpiar_numero(monto_input)
-    monto = monto_limpio
 
-    st.success(f"Monto ingresado: $ {monto:,.0f}")
+
+if monto_input:
+    monto = limpiar_numero(monto_input)
+    st.success(f"💲 Monto: $ {formatear_numero(monto)}")
+else:
+    monto = 0
 
 # =========================
 # FIRMA
