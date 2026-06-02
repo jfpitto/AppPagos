@@ -85,7 +85,13 @@ st.write(f"✅ Saldo restante: $ {saldo_actual:,.0f}")
 st.subheader("➕ Registrar nuevo pago")
 
 descripcion = st.text_input("Descripción")
-monto = st.number_input("Monto a pagar", min_value=0, step=10000)
+monto_input = st.text_input("Monto a pagar")
+
+if monto_input:
+    monto_limpio = limpiar_numero(monto_input)
+    monto = monto_limpio
+
+    st.success(f"Monto ingresado: $ {monto:,.0f}")
 
 # =========================
 # FIRMA
