@@ -1,3 +1,5 @@
 streamlit
 gspread
 google-auth
+pillow
+streamlit-drawable-canvas
