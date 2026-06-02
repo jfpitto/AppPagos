@@ -62,7 +62,7 @@ MONTO_TOTAL = 20_000_000
 
 WHATSAPP_NUMEROS = [
     "573158134610",
-    "573135439570"
+    "573226218053"
 ]
 
 st.title("💰 Sistema de Pagos - Control de Obra")
