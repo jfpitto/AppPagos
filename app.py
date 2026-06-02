@@ -12,10 +12,16 @@ import io
 st.set_page_config(page_title="Sistema de Pagos", layout="centered")
 
 # =========================
-# CONTROL DE ENVIO ✅
+# SESSION STATE
 # =========================
 if "pago_registrado" not in st.session_state:
     st.session_state.pago_registrado = False
+
+if "recibo_png" not in st.session_state:
+    st.session_state.recibo_png = None
+
+if "mensaje_ws" not in st.session_state:
+    st.session_state.mensaje_ws = None
 
 # =========================
 # GOOGLE SHEETS
@@ -53,6 +59,11 @@ conn.commit()
 # CONFIG
 # =========================
 MONTO_TOTAL = 20_000_000
+
+WHATSAPP_NUMEROS = [
+    "573158134610",
+    "573135439570"
+]
 
 st.title("💰 Sistema de Pagos - Control de Obra")
 
@@ -96,40 +107,38 @@ canvas_result = st_canvas(
 if st.button("Registrar pago", disabled=st.session_state.pago_registrado):
 
     if monto <= 0:
-        st.error("El monto debe ser mayor a cero")
+        st.error("Monto inválido")
 
     elif monto > saldo_actual:
-        st.error("El monto supera el saldo restante")
+        st.error("Supera saldo")
 
     elif canvas_result.image_data is None or canvas_result.image_data.sum() == 0:
-        st.error("Debe firmar antes de registrar el pago")
+        st.error("Debe firmar")
 
     else:
         fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
         nuevo_saldo = saldo_actual - monto
         firma_texto = f"Firmado ✅ {fecha}"
 
-        # ✅ SQLite
+        # SQLite
         cursor.execute(
             "INSERT INTO pagos (fecha, descripcion, monto, saldo, firmado) VALUES (?, ?, ?, ?, ?)",
             (fecha, descripcion, monto, nuevo_saldo, firma_texto)
         )
         conn.commit()
 
-        # ✅ Google Sheets
+        # Google Sheets
         try:
             sheet.append_row([fecha, descripcion, monto, nuevo_saldo, firma_texto])
             st.success("✅ Guardado en Google Sheets")
         except Exception as e:
-            st.error(f"Error en Sheets: {e}")
+            st.error(f"Error Sheets: {e}")
 
-        st.success("✅ Pago registrado correctamente")
-
-        # ✅ BLOQUEAR NUEVOS CLICKS
+        # BLOQUEO
         st.session_state.pago_registrado = True
 
         # =========================
-        # RECIBO PROFESIONAL
+        # GENERAR RECIBO
         # =========================
         img = Image.new("RGB", (750, 550), "white")
         draw = ImageDraw.Draw(img)
@@ -182,21 +191,63 @@ if st.button("Registrar pago", disabled=st.session_state.pago_registrado):
         buffer = io.BytesIO()
         img.save(buffer, format="PNG")
 
-        st.download_button(
-            "📄 Descargar Recibo (Imagen)",
-            buffer.getvalue(),
-            file_name="recibo.png",
-            mime="image/png"
+        st.session_state.recibo_png = buffer.getvalue()
+
+        # MENSAJE WHATSAPP
+        mensaje = f"""📄 *RECIBO DE PAGO*
+
+Proyecto: Carrera 29 # 33 - 47
+
+Fecha: {fecha}
+Descripción: {descripcion}
+Monto: $ {monto:,.0f}
+
+✅ Pago realizado y firmado
+"""
+        st.session_state.mensaje_ws = mensaje
+
+        st.success("✅ Pago registrado correctamente")
+
+# =========================
+# DESCARGA
+# =========================
+if st.session_state.recibo_png:
+    st.subheader("📄 Descargar Recibo")
+
+    st.download_button(
+        "⬇️ Descargar Recibo en PNG",
+        st.session_state.recibo_png,
+        file_name="recibo.png",
+        mime="image/png"
+    )
+
+# =========================
+# WHATSAPP
+# =========================
+if st.session_state.mensaje_ws:
+
+    st.subheader("📲 Enviar por WhatsApp")
+
+    for num in WHATSAPP_NUMEROS:
+        url = f"https://wa.me/{num}?text={st.session_state.mensaje_ws}"
+
+        st.markdown(
+            f'<a href="{url}" target="_blank">'
+            f'<button style="background-color:#25D366;color:white;padding:10px;border:none;border-radius:5px;">'
+            f'Enviar a {num}</button></a>',
+            unsafe_allow_html=True
         )
 
-        st.image(img, caption="Vista previa del recibo")
+    st.info("1. Abre WhatsApp\n2. Adjunta el recibo PNG\n3. Enviar ✅")
 
 # =========================
-# BOTÓN NUEVO PAGO ✅
+# RESET
 # =========================
 if st.session_state.pago_registrado:
-    if st.button("🔄 Registrar nuevo pago"):
+    if st.button("🔄 Nuevo pago"):
         st.session_state.pago_registrado = False
+        st.session_state.recibo_png = None
+        st.session_state.mensaje_ws = None
         st.rerun()
 
 # =========================
@@ -209,12 +260,5 @@ SELECT fecha, descripcion, monto, saldo, firmado
 FROM pagos ORDER BY id DESC
 """)
 
-rows = cursor.fetchall()
-
-if rows:
-    for row in rows:
-        st.write(
-            f"📅 {row[0]} | {row[1]} | 💲 {row[2]:,.0f} | Saldo: $ {row[3]:,.0f} | {row[4]}"
-        )
-else:
-    st.info("No hay pagos registrados")
+for row in cursor.fetchall():
+    st.write(f"📅 {row[0]} | {row[1]} | 💲 {row[2]:,.0f} | Saldo: $ {row[3]:,.0f} | {row[4]}")
