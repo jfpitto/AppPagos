@@ -44,7 +44,7 @@ conn.commit()
 # =========================
 # CONFIG GENERAL
 # =========================
-MONTO_TOTAL = 22_000_000
+MONTO_TOTAL = 20_000_000
 
 st.title("💰 Sistema de Pagos - Control de Obra")
 
@@ -91,7 +91,7 @@ if st.button("Registrar pago"):
         st.success("✅ Pago registrado y respaldado correctamente")
 
         recibo = f"""
-RECIBO DE PAGO
+RECIBO DE PAGO - CONSTRUCCION CARRERA 29 # 33 - 47 (Santa rita)
 
 Fecha: {fecha}
 Descripción: {descripcion}
@@ -109,10 +109,20 @@ Saldo restante: $ {nuevo_saldo:,.0f}
 # =========================
 # HISTORIAL
 # =========================
-st.subheader("📜 Historial de pagos")
+st.subheader("📜 Historial")
 
-cursor.execute("SELECT fecha, descripcion, monto, saldo FROM pagos ORDER BY id DESC")
-for row in cursor.fetchall():
-    st.write(
-        f"📅 {row[0]} | {row[1]} | 💲 {row,.0f} | Saldo: $ {row,.0f}"
-    )
+cursor.execute("""
+SELECT fecha, descripcion, monto, saldo, firmado
+FROM pagos ORDER BY id DESC
+""")
+
+rows = cursor.fetchall()
+
+if rows:
+    for row in rows:
+        st.write(
+            f"📅 {row[0]} | {row[1]} | 💲 {row[2]:,.0f} | Saldo: $ {row[3]:,.0f} | {row[4]}"
+        )
+else:
+    st.info("No hay pagos registrados")
+
